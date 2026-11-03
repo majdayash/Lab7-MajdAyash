@@ -3,9 +3,36 @@ import sqlite3
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+DATABASE = 'database.db'
+
+# users added to the database the first time the app runs
+initial_users = [
+    {
+        "name": "John Doe",
+        "email": "jondoe@gamil.com",
+        "phone": "067765434567",
+        "address": "John Doe Street, Innsbruck",
+        "country": "Austria"
+    },
+    {
+        "name": "Majd Ayash",
+        "email": "majd.ayash@mail.aub.edu",
+        "phone": "70123456",
+        "address": "Bliss Street, Hamra",
+        "country": "Lebanon"
+    },
+    {
+        "name": "Jane Smith",
+        "email": "janesmith@gmail.com",
+        "phone": "0612345678",
+        "address": "Rue de Rivoli, Paris",
+        "country": "France"
+    }
+]
+
 
 def connect_to_db():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE)
     return conn
 
 
@@ -25,6 +52,14 @@ def create_db_table():
 
         conn.commit()
         print("User table created successfully")
+
+        # first run: the table is empty, so add the initial users
+        if conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
+            for user in initial_users:
+                conn.execute("INSERT INTO users (name, email, phone, address, country) VALUES (?, ?, ?, ?, ?)",
+                             (user['name'], user['email'], user['phone'], user['address'], user['country']))
+            conn.commit()
+            print("Initial users inserted successfully")
     except:
         print("User table creation failed - Maybe table")
     finally:
